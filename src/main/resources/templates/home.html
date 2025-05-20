@@ -29,6 +29,10 @@
     <button type="submit">Sort Vehicles by Best Strategy</button>
 </form>
 
+<form method="post" action="/generate-output" th:if="${sortedByDays != null}">
+    <button type="submit">Generate Output</button>
+</form>
+
 <div class="list-container full-width">
     <h1>Strategies Details</h1>
     <table>

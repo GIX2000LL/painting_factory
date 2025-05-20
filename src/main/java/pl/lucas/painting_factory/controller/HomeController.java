@@ -15,6 +15,7 @@ import pl.lucas.painting_factory.logic.strategy.SortingStrategy;
 import pl.lucas.painting_factory.logic.strategy.SortingStrategySelector;
 import pl.lucas.painting_factory.logic.strategy.StrategyDetails;
 import pl.lucas.painting_factory.model.Vehicle;
+import pl.lucas.painting_factory.output.GenerateOutput;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class HomeController {
     private String lastUploadedFilePath = "src/main/resources/input/input.json"; // domyślna ścieżka
     private List<Vehicle> originalVehicles; // Lista oryginalna
     private List<Vehicle> sortedVehicles; // Lista posortowana
+    private String sortedBy = "None"; // Domyślna wartość
 
     public HomeController(InputGenerator inputGenerator) {
         this.inputGenerator = inputGenerator;
@@ -78,6 +80,9 @@ public class HomeController {
                 Path path = Paths.get("src/main/resources/input/input" + file.getOriginalFilename());
                 Files.write(path, bytes);
                 lastUploadedFilePath = path.toString();
+
+                // Informacja o przesłaniu pliku
+                System.out.println("Input file uploaded to: " + lastUploadedFilePath);
 
                 // Odczytanie pojazdów z pliku
                 originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
@@ -135,6 +140,9 @@ public class HomeController {
 
             SortingStrategySelector selector = new SortingStrategySelector();
             String bestStrategyName = selector.selectBestStrategy(vehiclesCopy);
+
+            this.sortedBy = bestStrategyName; // Ustawienie wybranej strategii
+            model.addAttribute("sortedBy", bestStrategyName);
 
             List<StrategyDetails> strategyDetails = selector.getStrategyDetails(originalVehicles);
             model.addAttribute("strategyDetails", strategyDetails);
@@ -203,6 +211,24 @@ public class HomeController {
             model.addAttribute("originalByDays", originalByDays);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        return "home";
+    }
+
+    @PostMapping("/generate-output")
+    public String generateOutput(Model model) {
+        try {
+            if (originalVehicles != null && sortedVehicles != null) {
+                GenerateOutput generateOutput = new GenerateOutput();
+                List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, TimeCalculator.WORKING_DAY_MINUTES);
+                generateOutput.generateOutputFile(originalVehicles, sortedByDays, sortedBy);
+                model.addAttribute("message", "Output file generated successfully!");
+            } else {
+                model.addAttribute("error", "Cannot generate output. Ensure vehicles are sorted first.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Error generating output file.");
         }
         return "home";
     }
