@@ -136,6 +136,7 @@ public class HomeController {
             String bestStrategyName = selector.selectBestStrategy(vehiclesCopy);
 
             TimeCalculator timeCalculator = new TimeCalculator();
+            int workingDayMinutes = 8 * 60; // 8 godzin w minutach
 
             // Obsługa przypadku, gdy czas jest taki sam dla wielu strategii
             if (bestStrategyName.startsWith("Time is the same")) {
@@ -150,12 +151,18 @@ public class HomeController {
                 int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
                 int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
 
+                // Podział na dni
+                List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, workingDayMinutes);
+                List<List<Vehicle>> originalByDays = splitVehiclesByDays(originalVehicles, workingDayMinutes);
+
                 // Dodanie atrybutów do modelu
                 model.addAttribute("sortedBy", bestStrategyName);
                 model.addAttribute("vehicles", originalVehicles); // Oryginalna lista
                 model.addAttribute("sortedVehicles", sortedVehicles); // Posortowana lista
                 model.addAttribute("strategyTime", totalTimeForStrategy);
                 model.addAttribute("strategyDays", numberOfDaysForStrategy);
+                model.addAttribute("sortedByDays", sortedByDays);
+                model.addAttribute("originalByDays", originalByDays);
 
                 // Obliczanie całkowitego czasu i dni dla oryginalnej listy
                 int totalTime = timeCalculator.calculateTotalPaintingTime(originalVehicles);
@@ -176,18 +183,20 @@ public class HomeController {
             int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
             int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
 
-            // Obliczanie całkowitego czasu i dni dla oryginalnej listy
-            int totalTime = timeCalculator.calculateTotalPaintingTime(originalVehicles);
-            int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
+            // Podział na dni
+            List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, workingDayMinutes);
+            List<List<Vehicle>> originalByDays = splitVehiclesByDays(originalVehicles, workingDayMinutes);
 
             // Dodanie atrybutów do modelu
             model.addAttribute("vehicles", originalVehicles); // Oryginalna lista
             model.addAttribute("sortedVehicles", sortedVehicles); // Posortowana lista
             model.addAttribute("sortedBy", bestStrategyName);
-            model.addAttribute("totalTime", totalTime);
-            model.addAttribute("numberOfDays", numberOfDays);
+            model.addAttribute("totalTime", timeCalculator.calculateTotalPaintingTime(originalVehicles));
+            model.addAttribute("numberOfDays", timeCalculator.calculateNumberOfDays(timeCalculator.calculateTotalPaintingTime(originalVehicles)));
             model.addAttribute("strategyTime", totalTimeForStrategy);
             model.addAttribute("strategyDays", numberOfDaysForStrategy);
+            model.addAttribute("sortedByDays", sortedByDays);
+            model.addAttribute("originalByDays", originalByDays);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -197,5 +206,28 @@ public class HomeController {
     private List<Vehicle> readVehiclesFromFile(String filePath) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(new File(filePath), new TypeReference<List<Vehicle>>() {});
+    }
+
+    private List<List<Vehicle>> splitVehiclesByDays(List<Vehicle> vehicles, int workingDayMinutes) {
+        List<List<Vehicle>> days = new ArrayList<>();
+        List<Vehicle> currentDay = new ArrayList<>();
+        int currentDayTime = 0;
+
+        for (Vehicle vehicle : vehicles) {
+            int paintingTime = vehicle.getType().getPaintingTime(); // Zakładamy, że Vehicle ma metodę getPaintingTime()
+            if (currentDayTime + paintingTime > workingDayMinutes) {
+                days.add(currentDay);
+                currentDay = new ArrayList<>();
+                currentDayTime = 0;
+            }
+            currentDay.add(vehicle);
+            currentDayTime += paintingTime;
+        }
+
+        if (!currentDay.isEmpty()) {
+            days.add(currentDay);
+        }
+
+        return days;
     }
 }

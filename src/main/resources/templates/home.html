@@ -7,6 +7,7 @@
 <body>
 <h1>PAINTING FACTORY</h1>
 
+<!-- Formularze -->
 <form method="post" action="/generate">
     <button type="submit">Generate Input</button>
 </form>
@@ -26,7 +27,7 @@
 </form>
 
 <div class="container">
-    <!-- Sekcja dla oryginalnych pojazdów -->
+    <!-- Kolumna 1: Oryginalne pojazdy -->
     <div class="list-container">
         <h2>Total Painting Time: <span th:text="${totalTime}">0</span> minutes</h2>
         <h2>Number of Working (8h) Days: <span th:text="${numberOfDays}">0</span></h2>
@@ -36,7 +37,7 @@
         </ul>
     </div>
 
-    <!-- Sekcja dla posortowanych pojazdów -->
+    <!-- Kolumna 2: Posortowane pojazdy -->
     <div class="list-container">
         <h2>Time for Chosen Strategy: <span th:text="${strategyTime}">0</span> minutes</h2>
         <h2>Number of Days for Chosen Strategy: <span th:text="${strategyDays}">0</span></h2>
@@ -45,6 +46,28 @@
         <ul>
             <li th:each="vehicle : ${sortedVehicles}" th:text="${vehicle}"></li>
         </ul>
+    </div>
+
+    <!-- Kolumna 3: Oryginalne pojazdy podzielone na dni -->
+    <div class="list-container">
+        <h1>Original Vehicles by Days</h1>
+        <div th:each="day, stat : ${originalByDays}">
+            <h2>DAY <span th:text="${stat.index + 1}"></span></h2>
+            <ul>
+                <li th:each="vehicle : ${day}" th:text="${vehicle}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Kolumna 4: Posortowane pojazdy podzielone na dni -->
+    <div class="list-container">
+        <h1>Sorted Vehicles by Days</h1>
+        <div th:each="day, stat : ${sortedByDays}">
+            <h2>DAY <span th:text="${stat.index + 1}"></span></h2>
+            <ul>
+                <li th:each="vehicle : ${day}" th:text="${vehicle}"></li>
+            </ul>
+        </div>
     </div>
 </div>
 </body>

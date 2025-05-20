@@ -42,11 +42,12 @@ input[type="file"] {
 .container {
     display: flex;
     justify-content: space-between;
+    gap: 20px; /* Odstęp między kolumnami */
     padding: 20px;
 }
 
 .list-container {
-    width: 45%;
+    width: 23%; /* Każda kolumna zajmuje 23% szerokości */
     background-color: #fff;
     padding: 15px;
     border: 1px solid #ddd;
