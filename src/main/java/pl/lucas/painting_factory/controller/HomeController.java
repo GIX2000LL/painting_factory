@@ -30,10 +30,10 @@ import java.util.List;
 public class HomeController {
 
     private final InputGenerator inputGenerator;
-    private String lastUploadedFilePath = "src/main/resources/input/input.json"; // domyślna ścieżka
-    private List<Vehicle> originalVehicles; // Lista oryginalna
-    private List<Vehicle> sortedVehicles; // Lista posortowana
-    private String sortedBy = "None"; // Domyślna wartość
+    private String lastUploadedFilePath = "src/main/resources/input/input.json";
+    private List<Vehicle> originalVehicles; //
+    private List<Vehicle> sortedVehicles; //
+    private String sortedBy = "None"; //
 
     public HomeController(InputGenerator inputGenerator) {
         this.inputGenerator = inputGenerator;
@@ -41,11 +41,12 @@ public class HomeController {
 
     @GetMapping
     public String home(Model model) {
-        // Czyszczenie list
+
+        // cleaning up the original and sorted vehicles
         originalVehicles = null;
         sortedVehicles = null;
 
-        // Dodanie pustych wartości do modelu
+        // adding the default values to the model
         model.addAttribute("vehicles", originalVehicles);
         model.addAttribute("sortedVehicles", sortedVehicles);
         model.addAttribute("totalTime", 0);
@@ -55,17 +56,16 @@ public class HomeController {
         model.addAttribute("strategyDays", 0);
 
         return "home";
-//        model.addAttribute("vehicles", originalVehicles); // Wyświetl oryginalną listę
-//        model.addAttribute("sortedVehicles", sortedVehicles); // Wyświetl posortowaną listę
-//        return "home";
     }
 
     @PostMapping("/generate")
     public String generateInput(Model model) {
+
         try {
             inputGenerator.generateInput();
             originalVehicles = readVehiclesFromFile("src/main/resources/input/input.json");
             model.addAttribute("vehicles", originalVehicles);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -74,6 +74,7 @@ public class HomeController {
 
     @PostMapping("/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file, Model model) {
+
         if (!file.isEmpty()) {
             try {
                 byte[] bytes = file.getBytes();
@@ -81,16 +82,12 @@ public class HomeController {
                 Files.write(path, bytes);
                 lastUploadedFilePath = path.toString();
 
-                // Informacja o przesłaniu pliku
                 System.out.println("Input file uploaded to: " + lastUploadedFilePath);
 
-                // Odczytanie pojazdów z pliku
                 originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
-
-                // Resetowanie listy posortowanych pojazdów
                 sortedVehicles = null;
 
-                // Aktualizacja modelu
+                //model actualization
                 model.addAttribute("vehicles", originalVehicles);
                 model.addAttribute("sortedVehicles", sortedVehicles);
                 model.addAttribute("totalTime", 0);
@@ -101,10 +98,10 @@ public class HomeController {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                model.addAttribute("error", "Błąd podczas odczytu pliku.");
+                model.addAttribute("error", "Error during reading file.");
             }
         } else {
-            model.addAttribute("error", "Nie wybrano pliku lub plik jest pusty.");
+            model.addAttribute("error", "You don't chose a file or uploaded file is empty.");
         }
         return "home";
     }
@@ -113,13 +110,13 @@ public class HomeController {
     public String calculatePaintingTime(Model model) {
         try {
             if (originalVehicles == null) {
-                originalVehicles = readVehiclesFromFile(lastUploadedFilePath); // Jeśli brak danych, odczytaj z pliku
+                originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
             }
             TimeCalculator timeCalculator = new TimeCalculator();
             int totalTime = timeCalculator.calculateTotalPaintingTime(originalVehicles);
             int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
 
-            model.addAttribute("vehicles", originalVehicles); // Wyświetl oryginalną listę
+            model.addAttribute("vehicles", originalVehicles);
             model.addAttribute("totalTime", totalTime);
             model.addAttribute("numberOfDays", numberOfDays);
         } catch (IOException e) {
@@ -135,22 +132,22 @@ public class HomeController {
                 originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
             }
 
-            // Tworzenie kopii oryginalnej listy
+            // copy of original list
             List<Vehicle> vehiclesCopy = new ArrayList<>(originalVehicles);
 
             SortingStrategySelector selector = new SortingStrategySelector();
             String bestStrategyName = selector.selectBestStrategy(vehiclesCopy);
 
-            this.sortedBy = bestStrategyName; // Ustawienie wybranej strategii
+            this.sortedBy = bestStrategyName;
             model.addAttribute("sortedBy", bestStrategyName);
 
             List<StrategyDetails> strategyDetails = selector.getStrategyDetails(originalVehicles);
             model.addAttribute("strategyDetails", strategyDetails);
 
             TimeCalculator timeCalculator = new TimeCalculator();
-            int workingDayMinutes = 8 * 60; // 8 godzin w minutach
+            int workingDayMinutes = 8 * 60;
 
-            // Obsługa przypadku, gdy czas jest taki sam dla wielu strategii
+            // case when we have a lot of strategies with the same time
             if (bestStrategyName.startsWith("Time is the same")) {
                 String firstStrategyName = bestStrategyName.split(": ")[1].split(", ")[0];
                 SortingStrategy bestStrategy = selector.getStrategies().stream()
@@ -158,25 +155,22 @@ public class HomeController {
                         .findFirst()
                         .orElseThrow(() -> new IllegalStateException("Strategy not found: " + firstStrategyName));
 
-                sortedVehicles = bestStrategy.sort(new ArrayList<>(originalVehicles)); // Sortowanie na kopii
+                sortedVehicles = bestStrategy.sort(new ArrayList<>(originalVehicles));
 
                 int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
                 int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
 
-                // Podział na dni
                 List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, workingDayMinutes);
                 List<List<Vehicle>> originalByDays = splitVehiclesByDays(originalVehicles, workingDayMinutes);
 
-                // Dodanie atrybutów do modelu
                 model.addAttribute("sortedBy", bestStrategyName);
-                model.addAttribute("vehicles", originalVehicles); // Oryginalna lista
-                model.addAttribute("sortedVehicles", sortedVehicles); // Posortowana lista
+                model.addAttribute("vehicles", originalVehicles);
+                model.addAttribute("sortedVehicles", sortedVehicles);
                 model.addAttribute("strategyTime", totalTimeForStrategy);
                 model.addAttribute("strategyDays", numberOfDaysForStrategy);
                 model.addAttribute("sortedByDays", sortedByDays);
                 model.addAttribute("originalByDays", originalByDays);
 
-                // Obliczanie całkowitego czasu i dni dla oryginalnej listy
                 int totalTime = timeCalculator.calculateTotalPaintingTime(originalVehicles);
                 int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
                 model.addAttribute("totalTime", totalTime);
@@ -190,18 +184,16 @@ public class HomeController {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Strategy not found: " + bestStrategyName));
 
-            sortedVehicles = bestStrategy.sort(new ArrayList<>(originalVehicles)); // Sortowanie na kopii
+            sortedVehicles = bestStrategy.sort(new ArrayList<>(originalVehicles));
 
             int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
             int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
 
-            // Podział na dni
             List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, workingDayMinutes);
             List<List<Vehicle>> originalByDays = splitVehiclesByDays(originalVehicles, workingDayMinutes);
 
-            // Dodanie atrybutów do modelu
-            model.addAttribute("vehicles", originalVehicles); // Oryginalna lista
-            model.addAttribute("sortedVehicles", sortedVehicles); // Posortowana lista
+            model.addAttribute("vehicles", originalVehicles);
+            model.addAttribute("sortedVehicles", sortedVehicles);
             model.addAttribute("sortedBy", bestStrategyName);
             model.addAttribute("totalTime", timeCalculator.calculateTotalPaintingTime(originalVehicles));
             model.addAttribute("numberOfDays", timeCalculator.calculateNumberOfDays(timeCalculator.calculateTotalPaintingTime(originalVehicles)));
@@ -222,26 +214,23 @@ public class HomeController {
                 GenerateOutput generateOutput = new GenerateOutput();
                 List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, TimeCalculator.WORKING_DAY_MINUTES);
 
-                // Utworzenie instancji SortingStrategySelector
                 SortingStrategySelector selector = new SortingStrategySelector();
 
-                // Obsługa przypadku wielu strategii o tym samym czasie
+                // case for multiply strategies with the same time
                 String strategyToUse;
                 if (sortedBy.startsWith("Time is the same")) {
                     String[] strategies = sortedBy.split(": ")[1].split(", ");
-                    strategyToUse = strategies[0]; // Wybierz pierwszą strategię
+                    strategyToUse = strategies[0];
                 } else {
                     strategyToUse = sortedBy;
                 }
 
-                // Pobranie szczegółów wybranej strategii
                 List<StrategyDetails> allStrategyDetails = selector.getStrategyDetails(originalVehicles);
                 StrategyDetails chosenStrategyDetails = allStrategyDetails.stream()
                         .filter(details -> details.getStrategyName().equals(strategyToUse))
                         .findFirst()
                         .orElse(null);
 
-                // Debugowanie: sprawdź, czy szczegóły strategii są poprawne
                 if (chosenStrategyDetails == null) {
                     System.out.println("Chosen strategy details are null. Check if 'sortedBy' matches any strategy name.");
                 }
@@ -269,7 +258,7 @@ public class HomeController {
         int currentDayTime = 0;
 
         for (Vehicle vehicle : vehicles) {
-            int paintingTime = vehicle.getType().getPaintingTime(); // Zakładamy, że Vehicle ma metodę getPaintingTime()
+            int paintingTime = vehicle.getType().getPaintingTime();
             if (currentDayTime + paintingTime > workingDayMinutes) {
                 days.add(currentDay);
                 currentDay = new ArrayList<>();
