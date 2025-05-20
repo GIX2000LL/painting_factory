@@ -87,3 +87,50 @@ li:hover {
         grid-template-columns: 1fr; /* Jedna kolumna na mniejszych ekranach */
     }
 }
+
+.full-width {
+    grid-column: 1 / -1; /* Rozciąga element na całą szerokość siatki */
+    width: 100%; /* Ustawia szerokość na 100% */
+    overflow-x: auto; /* Dodaje przewijanie w poziomie, jeśli dane są zbyt szerokie */
+    margin-bottom: 20px; /* Dodaje odstęp od kolejnych elementów */
+}
+
+/* Styl dla tabel */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+table thead {
+    background-color: #f4f4f9;
+}
+
+table th, table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: lightblue;
+}
+
+table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+table td {
+    text-align: center;
+}

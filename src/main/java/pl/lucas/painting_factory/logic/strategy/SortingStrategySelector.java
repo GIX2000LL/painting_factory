@@ -39,15 +39,7 @@ public class SortingStrategySelector {
             totalTime += positionChangeDelay;
 
             int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
-            System.out.println("STRATEGY: " + strategy.getClass().getSimpleName());
-            System.out.println("Total Time: " + totalTime + " minutes");
-            System.out.println("Number of Days: " + numberOfDays);
-            System.out.println("Total Delay (Position Changes): " + positionChangeDelay + " minutes");
-            System.out.println("Time for SUVs: " + timeCalculator.calculatePaintingTimeForType(sortedVehicles, "SUV") + " minutes");
-            System.out.println("Time for Regular Cars: " + timeCalculator.calculatePaintingTimeForType(sortedVehicles, "CAR") + " minutes");
-            System.out.println("Time for Trucks: " + timeCalculator.calculatePaintingTimeForType(sortedVehicles, "TRUCK") + " minutes");
-            System.out.println("Total Color Change Time: " + timeCalculator.calculateTotalColorChangeTime(sortedVehicles) + " minutes");
-            System.out.println("Initial Color Loading Time: " + TimeCalculator.INITIAL_COLOR_LOAD_TIME + " minutes");
+
             if (numberOfDays < minDays || (numberOfDays == minDays && totalTime < minTotalTime)) {
                 minDays = numberOfDays;
                 minTotalTime = totalTime;
@@ -63,6 +55,7 @@ public class SortingStrategySelector {
         }
 
         if (bestStrategies.size() > 1) {
+            System.out.println("Multiple optimal strategies found. Picking the first one: " + bestStrategies.get(0));
             return "Time is the same for all of these strategies: " + String.join(", ", bestStrategies);
         } else {
             return bestStrategies.get(0);
@@ -81,5 +74,32 @@ public class SortingStrategySelector {
 
     public List<SortingStrategy> getStrategies() {
         return strategies;
+    }
+
+    public List<StrategyDetails> getStrategyDetails(List<Vehicle> vehicles) {
+        List<StrategyDetails> strategyDetailsList = new ArrayList<>();
+        TimeCalculator timeCalculator = new TimeCalculator();
+
+        for (SortingStrategy strategy : strategies) {
+            List<Vehicle> sortedVehicles = strategy.sort(new ArrayList<>(vehicles));
+            int totalTime = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
+            int positionChangeDelay = calculatePositionChangeDelay(vehicles, sortedVehicles);
+            int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
+
+            StrategyDetails details = new StrategyDetails();
+            details.setStrategyName(strategy.getClass().getSimpleName());
+            details.setTotalTime(totalTime);
+            details.setNumberOfDays(numberOfDays);
+            details.setPositionChangeDelay(positionChangeDelay);
+            details.setSuvTime(timeCalculator.calculatePaintingTimeForType(sortedVehicles, "SUV"));
+            details.setCarTime(timeCalculator.calculatePaintingTimeForType(sortedVehicles, "CAR"));
+            details.setTruckTime(timeCalculator.calculatePaintingTimeForType(sortedVehicles, "TRUCK"));
+            details.setColorChangeTime(timeCalculator.calculateTotalColorChangeTime(sortedVehicles));
+            details.setInitialColorLoadTime(TimeCalculator.INITIAL_COLOR_LOAD_TIME);
+
+            strategyDetailsList.add(details);
+        }
+
+        return strategyDetailsList;
     }
 }

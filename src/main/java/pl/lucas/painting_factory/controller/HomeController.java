@@ -13,6 +13,7 @@ import pl.lucas.painting_factory.input.InputGenerator;
 import pl.lucas.painting_factory.logic.calculation.TimeCalculator;
 import pl.lucas.painting_factory.logic.strategy.SortingStrategy;
 import pl.lucas.painting_factory.logic.strategy.SortingStrategySelector;
+import pl.lucas.painting_factory.logic.strategy.StrategyDetails;
 import pl.lucas.painting_factory.model.Vehicle;
 
 import java.io.File;
@@ -134,6 +135,9 @@ public class HomeController {
 
             SortingStrategySelector selector = new SortingStrategySelector();
             String bestStrategyName = selector.selectBestStrategy(vehiclesCopy);
+
+            List<StrategyDetails> strategyDetails = selector.getStrategyDetails(originalVehicles);
+            model.addAttribute("strategyDetails", strategyDetails);
 
             TimeCalculator timeCalculator = new TimeCalculator();
             int workingDayMinutes = 8 * 60; // 8 godzin w minutach

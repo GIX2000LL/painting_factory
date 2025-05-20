@@ -26,6 +26,38 @@
     <button type="submit">Sort Vehicles by Best Strategy</button>
 </form>
 
+<div class="list-container full-width">
+    <h1>Strategies Details</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>Strategy</th>
+            <th>Total Time (min)</th>
+            <th>Number of Days</th>
+            <th>Position Change Delay (min)</th>
+            <th>SUV Time (min)</th>
+            <th>Car Time (min)</th>
+            <th>Truck Time (min)</th>
+            <th>Color Change Time (min)</th>
+            <th>Initial Color Load Time (min)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="details : ${strategyDetails}">
+            <td th:text="${details.strategyName}"></td>
+            <td th:text="${details.totalTime}"></td>
+            <td th:text="${details.numberOfDays}"></td>
+            <td th:text="${details.positionChangeDelay}"></td>
+            <td th:text="${details.suvTime}"></td>
+            <td th:text="${details.carTime}"></td>
+            <td th:text="${details.truckTime}"></td>
+            <td th:text="${details.colorChangeTime}"></td>
+            <td th:text="${details.initialColorLoadTime}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
 <div class="container">
     <!-- Kolumna 1: Oryginalne pojazdy -->
     <div class="list-container">
