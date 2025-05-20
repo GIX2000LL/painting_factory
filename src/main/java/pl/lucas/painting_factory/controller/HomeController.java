@@ -225,9 +225,19 @@ public class HomeController {
                 // Utworzenie instancji SortingStrategySelector
                 SortingStrategySelector selector = new SortingStrategySelector();
 
+                // Obsługa przypadku wielu strategii o tym samym czasie
+                String strategyToUse;
+                if (sortedBy.startsWith("Time is the same")) {
+                    String[] strategies = sortedBy.split(": ")[1].split(", ");
+                    strategyToUse = strategies[0]; // Wybierz pierwszą strategię
+                } else {
+                    strategyToUse = sortedBy;
+                }
+
                 // Pobranie szczegółów wybranej strategii
-                StrategyDetails chosenStrategyDetails = selector.getStrategyDetails(originalVehicles).stream()
-                        .filter(details -> details.getStrategyName().equals(sortedBy))
+                List<StrategyDetails> allStrategyDetails = selector.getStrategyDetails(originalVehicles);
+                StrategyDetails chosenStrategyDetails = allStrategyDetails.stream()
+                        .filter(details -> details.getStrategyName().equals(strategyToUse))
                         .findFirst()
                         .orElse(null);
 
@@ -236,7 +246,7 @@ public class HomeController {
                     System.out.println("Chosen strategy details are null. Check if 'sortedBy' matches any strategy name.");
                 }
 
-                generateOutput.generateOutputFile(originalVehicles, sortedByDays, sortedBy, chosenStrategyDetails);
+                generateOutput.generateOutputFile(originalVehicles, sortedByDays, strategyToUse, chosenStrategyDetails);
                 model.addAttribute("message", "Output file generated successfully!");
             } else {
                 model.addAttribute("error", "Cannot generate output. Ensure vehicles are sorted first.");
