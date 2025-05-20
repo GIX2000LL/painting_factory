@@ -78,13 +78,27 @@ public class HomeController {
                 Files.write(path, bytes);
                 lastUploadedFilePath = path.toString();
 
+                // Odczytanie pojazdów z pliku
                 originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
 
+                // Resetowanie listy posortowanych pojazdów
+                sortedVehicles = null;
 
+                // Aktualizacja modelu
                 model.addAttribute("vehicles", originalVehicles);
+                model.addAttribute("sortedVehicles", sortedVehicles);
+                model.addAttribute("totalTime", 0);
+                model.addAttribute("numberOfDays", 0);
+                model.addAttribute("sortedBy", "None");
+                model.addAttribute("strategyTime", 0);
+                model.addAttribute("strategyDays", 0);
+
             } catch (IOException e) {
                 e.printStackTrace();
+                model.addAttribute("error", "Błąd podczas odczytu pliku.");
             }
+        } else {
+            model.addAttribute("error", "Nie wybrano pliku lub plik jest pusty.");
         }
         return "home";
     }
@@ -121,29 +135,44 @@ public class HomeController {
             SortingStrategySelector selector = new SortingStrategySelector();
             String bestStrategyName = selector.selectBestStrategy(vehiclesCopy);
 
+            TimeCalculator timeCalculator = new TimeCalculator();
+
             // Obsługa przypadku, gdy czas jest taki sam dla wielu strategii
             if (bestStrategyName.startsWith("Time is the same")) {
+                String firstStrategyName = bestStrategyName.split(": ")[1].split(", ")[0];
+                SortingStrategy bestStrategy = selector.getStrategies().stream()
+                        .filter(strategy -> strategy.getClass().getSimpleName().equals(firstStrategyName))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Strategy not found: " + firstStrategyName));
+
+                sortedVehicles = bestStrategy.sort(new ArrayList<>(originalVehicles)); // Sortowanie na kopii
+
+                int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
+                int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
+
+                // Dodanie atrybutów do modelu
                 model.addAttribute("sortedBy", bestStrategyName);
                 model.addAttribute("vehicles", originalVehicles); // Oryginalna lista
-                model.addAttribute("sortedVehicles", new ArrayList<>()); // Pusta lista dla posortowanych pojazdów
-                model.addAttribute("totalTime", 0);
-                model.addAttribute("numberOfDays", 0);
-                model.addAttribute("strategyTime", 0);
-                model.addAttribute("strategyDays", 0);
+                model.addAttribute("sortedVehicles", sortedVehicles); // Posortowana lista
+                model.addAttribute("strategyTime", totalTimeForStrategy);
+                model.addAttribute("strategyDays", numberOfDaysForStrategy);
+
+                // Obliczanie całkowitego czasu i dni dla oryginalnej listy
+                int totalTime = timeCalculator.calculateTotalPaintingTime(originalVehicles);
+                int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
+                model.addAttribute("totalTime", totalTime);
+                model.addAttribute("numberOfDays", numberOfDays);
+
                 return "home";
             }
 
-            // Wyszukiwanie strategii na podstawie nazwy
             SortingStrategy bestStrategy = selector.getStrategies().stream()
                     .filter(strategy -> strategy.getClass().getSimpleName().equals(bestStrategyName))
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Strategy not found: " + bestStrategyName));
 
-            // Sortowanie pojazdów
-            sortedVehicles = bestStrategy.sort(vehiclesCopy);
+            sortedVehicles = bestStrategy.sort(new ArrayList<>(originalVehicles)); // Sortowanie na kopii
 
-            // Obliczanie czasu dla strategii
-            TimeCalculator timeCalculator = new TimeCalculator();
             int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
             int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
 

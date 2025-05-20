@@ -39,6 +39,7 @@ public class SortingStrategySelector {
             totalTime += positionChangeDelay;
 
             int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
+            System.out.println("STRATEGY: " + strategy.getClass().getSimpleName() + " - Total Time: " + totalTime + " minutes, Number of Days: " + numberOfDays);
 
             if (numberOfDays < minDays || (numberOfDays == minDays && totalTime < minTotalTime)) {
                 minDays = numberOfDays;
