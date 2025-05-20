@@ -1,6 +1,7 @@
 package pl.lucas.painting_factory.output;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import pl.lucas.painting_factory.logic.strategy.StrategyDetails;
 import pl.lucas.painting_factory.model.Vehicle;
 
 import java.io.File;
@@ -10,11 +11,11 @@ import java.util.List;
 
 public class GenerateOutput {
 
-    public void generateOutputFile(List<Vehicle> originalVehicles, List<List<Vehicle>> sortedByDays, String chosenStrategy) throws IOException {
+    public void generateOutputFile(List<Vehicle> originalVehicles, List<List<Vehicle>> sortedByDays, String chosenStrategy, StrategyDetails strategyDetails) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
 
         // Tworzenie struktury danych do zapisania
-        OutputData outputData = new OutputData(originalVehicles, addDayInfoToSortedVehicles(sortedByDays), extractFirstStrategy(chosenStrategy));
+        OutputData outputData = new OutputData(originalVehicles, addDayInfoToSortedVehicles(sortedByDays), extractFirstStrategy(chosenStrategy), strategyDetails);
 
         // Ścieżka do folderu output w resources
         String outputPath = "src/main/resources/output/output.json";
@@ -52,11 +53,13 @@ public class GenerateOutput {
         private List<Vehicle> originalVehicles;
         private List<DayVehicles> sortedByDays;
         private String chosenStrategy;
+        private StrategyDetails strategyDetails;
 
-        public OutputData(List<Vehicle> originalVehicles, List<DayVehicles> sortedByDays, String chosenStrategy) {
+        public OutputData(List<Vehicle> originalVehicles, List<DayVehicles> sortedByDays, String chosenStrategy, StrategyDetails strategyDetails) {
             this.originalVehicles = originalVehicles;
             this.sortedByDays = sortedByDays;
             this.chosenStrategy = chosenStrategy;
+            this.strategyDetails = strategyDetails;
         }
 
         public List<Vehicle> getOriginalVehicles() {
@@ -69,6 +72,10 @@ public class GenerateOutput {
 
         public String getChosenStrategy() {
             return chosenStrategy;
+        }
+
+        public StrategyDetails getStrategyDetails() {
+            return strategyDetails;
         }
     }
 

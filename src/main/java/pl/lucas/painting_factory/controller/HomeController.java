@@ -221,7 +221,22 @@ public class HomeController {
             if (originalVehicles != null && sortedVehicles != null) {
                 GenerateOutput generateOutput = new GenerateOutput();
                 List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, TimeCalculator.WORKING_DAY_MINUTES);
-                generateOutput.generateOutputFile(originalVehicles, sortedByDays, sortedBy);
+
+                // Utworzenie instancji SortingStrategySelector
+                SortingStrategySelector selector = new SortingStrategySelector();
+
+                // Pobranie szczegółów wybranej strategii
+                StrategyDetails chosenStrategyDetails = selector.getStrategyDetails(originalVehicles).stream()
+                        .filter(details -> details.getStrategyName().equals(sortedBy))
+                        .findFirst()
+                        .orElse(null);
+
+                // Debugowanie: sprawdź, czy szczegóły strategii są poprawne
+                if (chosenStrategyDetails == null) {
+                    System.out.println("Chosen strategy details are null. Check if 'sortedBy' matches any strategy name.");
+                }
+
+                generateOutput.generateOutputFile(originalVehicles, sortedByDays, sortedBy, chosenStrategyDetails);
                 model.addAttribute("message", "Output file generated successfully!");
             } else {
                 model.addAttribute("error", "Cannot generate output. Ensure vehicles are sorted first.");
