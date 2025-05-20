@@ -39,8 +39,15 @@ public class SortingStrategySelector {
             totalTime += positionChangeDelay;
 
             int numberOfDays = timeCalculator.calculateNumberOfDays(totalTime);
-            System.out.println("STRATEGY: " + strategy.getClass().getSimpleName() + " - Total Time: " + totalTime + " minutes, Number of Days: " + numberOfDays);
-
+            System.out.println("STRATEGY: " + strategy.getClass().getSimpleName());
+            System.out.println("Total Time: " + totalTime + " minutes");
+            System.out.println("Number of Days: " + numberOfDays);
+            System.out.println("Total Delay (Position Changes): " + positionChangeDelay + " minutes");
+            System.out.println("Time for SUVs: " + timeCalculator.calculatePaintingTimeForType(sortedVehicles, "SUV") + " minutes");
+            System.out.println("Time for Regular Cars: " + timeCalculator.calculatePaintingTimeForType(sortedVehicles, "CAR") + " minutes");
+            System.out.println("Time for Trucks: " + timeCalculator.calculatePaintingTimeForType(sortedVehicles, "TRUCK") + " minutes");
+            System.out.println("Total Color Change Time: " + timeCalculator.calculateTotalColorChangeTime(sortedVehicles) + " minutes");
+            System.out.println("Initial Color Loading Time: " + TimeCalculator.INITIAL_COLOR_LOAD_TIME + " minutes");
             if (numberOfDays < minDays || (numberOfDays == minDays && totalTime < minTotalTime)) {
                 minDays = numberOfDays;
                 minTotalTime = totalTime;
