@@ -40,14 +40,13 @@ input[type="file"] {
 }
 
 .container {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Trzy kolumny o równej szerokości */
     gap: 20px; /* Odstęp między kolumnami */
     padding: 20px;
 }
 
 .list-container {
-    width: 23%; /* Każda kolumna zajmuje 23% szerokości */
     background-color: #fff;
     padding: 15px;
     border: 1px solid #ddd;
@@ -80,4 +79,11 @@ li:hover {
     background-color: #f9f9f9;
     text-align: center;
     margin-bottom: 15px;
+}
+
+/* Responsywność */
+@media (max-width: 1000px) {
+    .container {
+        grid-template-columns: 1fr; /* Jedna kolumna na mniejszych ekranach */
+    }
 }

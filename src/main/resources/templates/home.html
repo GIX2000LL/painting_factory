@@ -48,18 +48,7 @@
         </ul>
     </div>
 
-    <!-- Kolumna 3: Oryginalne pojazdy podzielone na dni -->
-    <div class="list-container">
-        <h1>Original Vehicles by Days</h1>
-        <div th:each="day, stat : ${originalByDays}">
-            <h2>DAY <span th:text="${stat.index + 1}"></span></h2>
-            <ul>
-                <li th:each="vehicle : ${day}" th:text="${vehicle}"></li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Kolumna 4: Posortowane pojazdy podzielone na dni -->
+    <!-- Kolumna 3: Posortowane pojazdy podzielone na dni -->
     <div class="list-container">
         <h1>Sorted Vehicles by Days</h1>
         <div th:each="day, stat : ${sortedByDays}">
