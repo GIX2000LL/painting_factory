@@ -5,6 +5,9 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+
+<a href="/" class="reset-button">Reset Application</a>
+
 <h1>PAINTING FACTORY</h1>
 
 <!-- Formularze -->
@@ -18,11 +21,11 @@
     <button type="submit">Upload</button>
 </form>
 
-<form method="post" action="/calculate">
+<form method="post" action="/calculate" th:if="${vehicles != null}">
     <button type="submit">Calculate Total Painting Time</button>
 </form>
 
-<form method="post" action="/sort">
+<form method="post" action="/sort" th:if="${totalTime > 0 and numberOfDays > 0}">
     <button type="submit">Sort Vehicles by Best Strategy</button>
 </form>
 

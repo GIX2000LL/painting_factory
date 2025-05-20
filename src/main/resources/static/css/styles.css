@@ -134,3 +134,20 @@ table tbody tr:hover {
 table td {
     text-align: center;
 }
+
+.reset-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: red;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.reset-button:hover {
+    background-color: darkred;
+}
