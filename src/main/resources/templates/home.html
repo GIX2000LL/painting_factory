@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">PAINTING FACTORY</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<h1>PAINTING FACTORY</h1>
+
+<form method="post" action="/generate">
+    <button type="submit">Generate Input</button>
+</form>
+
+<form method="post" enctype="multipart/form-data" action="/upload">
+    <label for="file">Upload JSON File:</label>
+    <input type="file" id="file" name="file" accept="application/json">
+    <button type="submit">Upload</button>
+</form>
+
+<form method="post" action="/calculate">
+    <button type="submit">Calculate Total Painting Time</button>
+</form>
+
+<form method="post" action="/sort">
+    <button type="submit">Sort Vehicles by Best Strategy</button>
+</form>
+
+<div class="container">
+    <!-- Sekcja dla oryginalnych pojazdów -->
+    <div class="list-container">
+        <h2>Total Painting Time: <span th:text="${totalTime}">0</span> minutes</h2>
+        <h2>Number of Working (8h) Days: <span th:text="${numberOfDays}">0</span></h2>
+        <h1>Original Vehicles</h1>
+        <ul>
+            <li th:each="vehicle : ${vehicles}" th:text="${vehicle}"></li>
+        </ul>
+    </div>
+
+    <!-- Sekcja dla posortowanych pojazdów -->
+    <div class="list-container">
+        <h2>Time for Chosen Strategy: <span th:text="${strategyTime}">0</span> minutes</h2>
+        <h2>Number of Days for Chosen Strategy: <span th:text="${strategyDays}">0</span></h2>
+        <h2>Chosen Strategy: <span th:text="${sortedBy}">None</span></h2>
+        <h1>Sorted Vehicles</h1>
+        <ul>
+            <li th:each="vehicle : ${sortedVehicles}" th:text="${vehicle}"></li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>
