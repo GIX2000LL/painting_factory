@@ -1,14 +1,16 @@
 package pl.lucas.painting_factory.logic.strategy;
 
+import lombok.Getter;
 import pl.lucas.painting_factory.logic.calculation.TimeCalculator;
 import pl.lucas.painting_factory.model.Vehicle;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class SortingStrategySelector {
 
-    private static final int POSITION_CHANGE_DELAY = 5; // Opóźnienie za zmianę pozycji (w minutach)
+    private static final int POSITION_CHANGE_DELAY = 5;
     private final List<SortingStrategy> strategies = new ArrayList<>();
 
     public SortingStrategySelector() {
@@ -70,10 +72,6 @@ public class SortingStrategySelector {
             }
         }
         return delay;
-    }
-
-    public List<SortingStrategy> getStrategies() {
-        return strategies;
     }
 
     public List<StrategyDetails> getStrategyDetails(List<Vehicle> vehicles) {

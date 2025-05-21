@@ -3,7 +3,6 @@ package pl.lucas.painting_factory.output;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pl.lucas.painting_factory.logic.strategy.StrategyDetails;
 import pl.lucas.painting_factory.model.Vehicle;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,24 +11,13 @@ import java.util.List;
 public class GenerateOutput {
 
     public void generateOutputFile(List<Vehicle> originalVehicles, List<List<Vehicle>> sortedByDays, String chosenStrategy, StrategyDetails strategyDetails) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
 
-        // Tworzenie struktury danych do zapisania
+        ObjectMapper objectMapper = new ObjectMapper();
         OutputData outputData = new OutputData(originalVehicles, addDayInfoToSortedVehicles(sortedByDays), extractFirstStrategy(chosenStrategy), strategyDetails);
 
-        // Ścieżka do folderu output w resources
         String outputPath = "src/main/resources/output/output.json";
-
-        // Tworzenie folderu, jeśli nie istnieje
-        File outputDir = new File("src/main/resources/output");
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
-        }
-
-        // Zapis do pliku JSON
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(outputPath), outputData);
 
-        // Informacja o utworzeniu pliku
         System.out.println("Output file created at: " + outputPath);
     }
 
@@ -48,53 +36,13 @@ public class GenerateOutput {
         return dayVehiclesList;
     }
 
-    // Klasa pomocnicza do przechowywania danych
-    public static class OutputData {
-        private List<Vehicle> originalVehicles;
-        private List<DayVehicles> sortedByDays;
-        private String chosenStrategy;
-        private StrategyDetails strategyDetails;
 
-        public OutputData(List<Vehicle> originalVehicles, List<DayVehicles> sortedByDays, String chosenStrategy, StrategyDetails strategyDetails) {
-            this.originalVehicles = originalVehicles;
-            this.sortedByDays = sortedByDays;
-            this.chosenStrategy = chosenStrategy;
-            this.strategyDetails = strategyDetails;
-        }
+    public record OutputData(List<Vehicle> originalVehicles, List<DayVehicles> sortedByDays, String chosenStrategy,
+                                 StrategyDetails strategyDetails) {
 
-        public List<Vehicle> getOriginalVehicles() {
-            return originalVehicles;
-        }
-
-        public List<DayVehicles> getSortedByDays() {
-            return sortedByDays;
-        }
-
-        public String getChosenStrategy() {
-            return chosenStrategy;
-        }
-
-        public StrategyDetails getStrategyDetails() {
-            return strategyDetails;
-        }
     }
 
-    // Klasa pomocnicza do przechowywania pojazdów z informacją o dniu
-    public static class DayVehicles {
-        private String day;
-        private List<Vehicle> vehicles;
+    public record DayVehicles(String day, List<Vehicle> vehicles) {
 
-        public DayVehicles(String day, List<Vehicle> vehicles) {
-            this.day = day;
-            this.vehicles = vehicles;
-        }
-
-        public String getDay() {
-            return day;
-        }
-
-        public List<Vehicle> getVehicles() {
-            return vehicles;
-        }
     }
 }
