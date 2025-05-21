@@ -79,7 +79,6 @@ public class HomeController {
 
         if (!file.isEmpty()) {
             try {
-                byte[] bytes = file.getBytes();
                 Path path = Paths.get("src/main/resources/input/input" + file.getOriginalFilename());
                 fileService.saveFile(file.getBytes(), path);
                 lastUploadedFilePath = path.toString();

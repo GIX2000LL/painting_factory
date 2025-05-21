@@ -17,7 +17,7 @@ public class FileService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<Vehicle> readVehiclesFromFile(String filePath) throws IOException {
-        return objectMapper.readValue(new File(filePath), new TypeReference<List<Vehicle>>() {});
+        return objectMapper.readValue(new File(filePath), new TypeReference<>() {});
     }
 
     public void saveFile(byte[] bytes, Path path) throws IOException {

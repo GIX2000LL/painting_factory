@@ -1,9 +1,7 @@
 package pl.lucas.painting_factory.service;
 
 import org.springframework.stereotype.Service;
-import pl.lucas.painting_factory.logic.calculation.TimeCalculator;
 import pl.lucas.painting_factory.model.Vehicle;
-
 import java.util.ArrayList;
 import java.util.List;
 
