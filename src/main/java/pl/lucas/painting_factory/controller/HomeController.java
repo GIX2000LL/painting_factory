@@ -1,7 +1,5 @@
 package pl.lucas.painting_factory.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -18,10 +16,9 @@ import pl.lucas.painting_factory.logic.strategy.SortingStrategySelector;
 import pl.lucas.painting_factory.logic.strategy.StrategyDetails;
 import pl.lucas.painting_factory.model.Vehicle;
 import pl.lucas.painting_factory.output.GenerateOutput;
-
-import java.io.File;
+import pl.lucas.painting_factory.service.FileService;
+import pl.lucas.painting_factory.service.VehicleListService;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -33,14 +30,19 @@ public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
+    FileService fileService;
+    VehicleListService vehicleListService;
+
     private final InputGenerator inputGenerator;
     private String lastUploadedFilePath = "src/main/resources/input/input.json";
     private List<Vehicle> originalVehicles; //
     private List<Vehicle> sortedVehicles; //
     private String sortedBy = "None"; //
 
-    public HomeController(InputGenerator inputGenerator) {
+    public HomeController(InputGenerator inputGenerator, FileService fileService, VehicleListService vehicleListService) {
         this.inputGenerator = inputGenerator;
+        this.fileService = fileService;
+        this.vehicleListService = vehicleListService;
     }
 
     @GetMapping
@@ -51,13 +53,9 @@ public class HomeController {
         sortedVehicles = null;
 
         // adding the default values to the model
-        model.addAttribute("vehicles", originalVehicles);
+        model.addAttribute("vehicles", null);
         model.addAttribute("sortedVehicles", sortedVehicles);
-        model.addAttribute("totalTime", 0);
-        model.addAttribute("numberOfDays", 0);
-        model.addAttribute("sortedBy", "None");
-        model.addAttribute("strategyTime", 0);
-        model.addAttribute("strategyDays", 0);
+        resetModel(model);
 
         return "home";
     }
@@ -67,7 +65,7 @@ public class HomeController {
 
         try {
             inputGenerator.generateInput();
-            originalVehicles = readVehiclesFromFile("src/main/resources/input/input.json");
+            originalVehicles = fileService.readVehiclesFromFile("src/main/resources/input/input.json");
             model.addAttribute("vehicles", originalVehicles);
 
         } catch (IOException e) {
@@ -83,22 +81,18 @@ public class HomeController {
             try {
                 byte[] bytes = file.getBytes();
                 Path path = Paths.get("src/main/resources/input/input" + file.getOriginalFilename());
-                Files.write(path, bytes);
+                fileService.saveFile(file.getBytes(), path);
                 lastUploadedFilePath = path.toString();
 
                 System.out.println("Input file uploaded to: " + lastUploadedFilePath);
 
-                originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
+                originalVehicles = fileService.readVehiclesFromFile(lastUploadedFilePath);
                 sortedVehicles = null;
 
                 //model actualization
                 model.addAttribute("vehicles", originalVehicles);
                 model.addAttribute("sortedVehicles", sortedVehicles);
-                model.addAttribute("totalTime", 0);
-                model.addAttribute("numberOfDays", 0);
-                model.addAttribute("sortedBy", "None");
-                model.addAttribute("strategyTime", 0);
-                model.addAttribute("strategyDays", 0);
+                resetModel(model);
 
             } catch (IOException e) {
                 logger.error("Error during upload input file: {}", e.getMessage(), e);
@@ -114,7 +108,7 @@ public class HomeController {
     public String calculatePaintingTime(Model model) {
         try {
             if (originalVehicles == null) {
-                originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
+                originalVehicles = fileService.readVehiclesFromFile(lastUploadedFilePath);
             }
             TimeCalculator timeCalculator = new TimeCalculator();
             int totalTime = timeCalculator.calculateTotalPaintingTime(originalVehicles);
@@ -133,7 +127,7 @@ public class HomeController {
     public String sortVehicles(Model model) {
         try {
             if (originalVehicles == null) {
-                originalVehicles = readVehiclesFromFile(lastUploadedFilePath);
+                originalVehicles = fileService.readVehiclesFromFile(lastUploadedFilePath);
             }
 
             // copy of original list
@@ -164,8 +158,8 @@ public class HomeController {
                 int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
                 int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
 
-                List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, workingDayMinutes);
-                List<List<Vehicle>> originalByDays = splitVehiclesByDays(originalVehicles, workingDayMinutes);
+                List<List<Vehicle>> sortedByDays = vehicleListService.splitVehiclesByDays(sortedVehicles, workingDayMinutes);
+                List<List<Vehicle>> originalByDays = vehicleListService.splitVehiclesByDays(originalVehicles, workingDayMinutes);
 
                 model.addAttribute("sortedBy", bestStrategyName);
                 model.addAttribute("vehicles", originalVehicles);
@@ -193,8 +187,8 @@ public class HomeController {
             int totalTimeForStrategy = timeCalculator.calculateTotalPaintingTime(sortedVehicles);
             int numberOfDaysForStrategy = timeCalculator.calculateNumberOfDays(totalTimeForStrategy);
 
-            List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, workingDayMinutes);
-            List<List<Vehicle>> originalByDays = splitVehiclesByDays(originalVehicles, workingDayMinutes);
+            List<List<Vehicle>> sortedByDays = vehicleListService.splitVehiclesByDays(sortedVehicles, workingDayMinutes);
+            List<List<Vehicle>> originalByDays = vehicleListService.splitVehiclesByDays(originalVehicles, workingDayMinutes);
 
             model.addAttribute("vehicles", originalVehicles);
             model.addAttribute("sortedVehicles", sortedVehicles);
@@ -216,7 +210,7 @@ public class HomeController {
         try {
             if (originalVehicles != null && sortedVehicles != null) {
                 GenerateOutput generateOutput = new GenerateOutput();
-                List<List<Vehicle>> sortedByDays = splitVehiclesByDays(sortedVehicles, TimeCalculator.WORKING_DAY_MINUTES);
+                List<List<Vehicle>> sortedByDays = vehicleListService.splitVehiclesByDays(sortedVehicles, TimeCalculator.WORKING_DAY_MINUTES);
 
                 SortingStrategySelector selector = new SortingStrategySelector();
 
@@ -251,31 +245,11 @@ public class HomeController {
         return "home";
     }
 
-    private List<Vehicle> readVehiclesFromFile(String filePath) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(new File(filePath), new TypeReference<List<Vehicle>>() {});
-    }
-
-    private List<List<Vehicle>> splitVehiclesByDays(List<Vehicle> vehicles, int workingDayMinutes) {
-        List<List<Vehicle>> days = new ArrayList<>();
-        List<Vehicle> currentDay = new ArrayList<>();
-        int currentDayTime = 0;
-
-        for (Vehicle vehicle : vehicles) {
-            int paintingTime = vehicle.getType().getPaintingTime();
-            if (currentDayTime + paintingTime > workingDayMinutes) {
-                days.add(currentDay);
-                currentDay = new ArrayList<>();
-                currentDayTime = 0;
-            }
-            currentDay.add(vehicle);
-            currentDayTime += paintingTime;
-        }
-
-        if (!currentDay.isEmpty()) {
-            days.add(currentDay);
-        }
-
-        return days;
+    private void resetModel(Model model) {
+        model.addAttribute("totalTime", 0);
+        model.addAttribute("numberOfDays", 0);
+        model.addAttribute("sortedBy", "None");
+        model.addAttribute("strategyTime", 0);
+        model.addAttribute("strategyDays", 0);
     }
 }
