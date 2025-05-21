@@ -2,6 +2,8 @@ package pl.lucas.painting_factory.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,8 @@ import java.util.List;
 @Controller
 @RequestMapping ("/")
 public class HomeController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     private final InputGenerator inputGenerator;
     private String lastUploadedFilePath = "src/main/resources/input/input.json";
@@ -67,7 +71,7 @@ public class HomeController {
             model.addAttribute("vehicles", originalVehicles);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error during generating input file: {}", e.getMessage(), e);
         }
         return "home";
     }
@@ -97,7 +101,7 @@ public class HomeController {
                 model.addAttribute("strategyDays", 0);
 
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Error during upload input file: {}", e.getMessage(), e);
                 model.addAttribute("error", "Error during reading file.");
             }
         } else {
@@ -120,7 +124,7 @@ public class HomeController {
             model.addAttribute("totalTime", totalTime);
             model.addAttribute("numberOfDays", numberOfDays);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error during calculation of times from input file: {}", e.getMessage(), e);
         }
         return "home";
     }
@@ -202,7 +206,7 @@ public class HomeController {
             model.addAttribute("sortedByDays", sortedByDays);
             model.addAttribute("originalByDays", originalByDays);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error during choose of optimal strategy {}", e.getMessage(), e);
         }
         return "home";
     }
@@ -241,7 +245,7 @@ public class HomeController {
                 model.addAttribute("error", "Cannot generate output. Ensure vehicles are sorted first.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error during output generation: {}", e.getMessage(), e);
             model.addAttribute("error", "Error generating output file.");
         }
         return "home";
