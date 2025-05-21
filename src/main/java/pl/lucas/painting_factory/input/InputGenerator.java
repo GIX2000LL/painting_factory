@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import pl.lucas.painting_factory.model.Vehicle;
 import pl.lucas.painting_factory.repository.VehicleRepository;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
